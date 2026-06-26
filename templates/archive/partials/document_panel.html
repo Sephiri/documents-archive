@@ -1,0 +1,17 @@
+<article class="card document-panel">
+  <header class="card-header document-header">
+    <div class="pdf-icon" aria-hidden="true">PDF</div>
+    <div>
+      <h1>{{ panel.document_title }}</h1>
+      <p>
+        {% for item in panel.document_meta_items %}
+          {{ item }}{% if not forloop.last %} · {% endif %}
+        {% endfor %}
+      </p>
+    </div>
+  </header>
+
+  <div class="pdf-frame">
+    <iframe src="{% url 'file-view' panel.document.id %}" title="{{ panel.document_title }}"></iframe>
+  </div>
+</article>

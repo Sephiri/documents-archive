@@ -1,0 +1,54 @@
+{% load static %}
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Documents Archive{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'archive/styles.css' %}">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="{% url 'intern-home' %}">
+          <span class="brand-mark">L</span>
+          <span class="brand-text">Intern</span>
+        </a>
+
+        <nav class="nav">
+          <section class="nav-section">
+            <h2>Protokolle</h2>
+            {% for key, label in protocol_type_labels.items %}
+              <a class="nav-link{% if current_path == '/intern/protokolle/'|add:key|add:'/' %} active{% endif %}" href="{% url 'protocol-view' key %}">
+                {% if current_path == '/intern/protokolle/'|add:key|add:'/' %}<span aria-hidden="true">›</span>{% endif %}
+                {{ label }}
+              </a>
+            {% endfor %}
+          </section>
+
+          <section class="nav-section">
+            <h2>Statuten</h2>
+            {% for key, label in statute_type_labels.items %}
+              <a class="nav-link{% if current_path == '/intern/statuten/'|add:key|add:'/' %} active{% endif %}" href="{% url 'statute-view' key %}">
+                {% if current_path == '/intern/statuten/'|add:key|add:'/' %}<span aria-hidden="true">›</span>{% endif %}
+                {{ label }}
+              </a>
+            {% endfor %}
+          </section>
+        </nav>
+      </aside>
+
+      <div class="content-shell">
+        <header class="topbar">
+          <span class="breadcrumb-muted">{{ breadcrumb_main }}</span>
+          <span class="breadcrumb-separator">/</span>
+          <strong>{{ breadcrumb_current }}</strong>
+        </header>
+
+        <main class="main-content">
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,78 @@
+{% extends "archive/base.html" %}
+{% load archive_extras %}
+
+{% block title %}{{ title }} · Documents Archive{% endblock %}
+
+{% block content %}
+  <section class="collection-grid">
+    <article class="card list-card">
+      <header class="card-header">
+        <h1>{{ title }}</h1>
+      </header>
+
+      <form class="toolbar" method="get">
+        <label class="search">
+          <span class="sr-only">Suche</span>
+          <input type="search" name="q" value="{{ search_term }}" placeholder="Suche...">
+        </label>
+
+        <select name="semester" aria-label="Semester">
+          <option value="">Alle Semester</option>
+          {% for semester in semester_options %}
+            <option value="{{ semester }}"{% if semester == active_semester %} selected{% endif %}>{{ semester }}</option>
+          {% endfor %}
+        </select>
+
+        <select name="year" aria-label="Jahr">
+          <option value="">Alle Jahre</option>
+          {% for year in year_options %}
+            <option value="{{ year }}"{% if year == active_year %} selected{% endif %}>{{ year }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit">Filtern</button>
+        <a class="button-secondary" href="{{ request.path }}">Zurücksetzen</a>
+      </form>
+
+      <p class="result-count">{{ document_count }} Protokoll(e) gefunden</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Semester</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in documents %}
+              <tr class="{% if selected_document and selected_document.id == entry.id %}selected{% endif %}">
+                <td>
+                  <a href="?selected={{ entry.id }}{% if search_term %}&q={{ search_term|urlencode }}{% endif %}{% if active_semester %}&semester={{ active_semester|urlencode }}{% endif %}{% if active_year %}&year={{ active_year|urlencode }}{% endif %}">
+                    {{ entry|document_title }}
+                  </a>
+                </td>
+                <td><span class="badge">{{ entry.semester }}</span></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="2">
+                  <div class="empty-inline">Keine Protokolle für diese Filter gefunden.</div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    {% if selected_panel %}
+      {% include "archive/partials/document_panel.html" with panel=selected_panel %}
+    {% else %}
+      <section class="empty-card">
+        <h2>Kein Dokument ausgewählt</h2>
+        <p>Wähle links ein Dokument aus, um Details zu sehen.</p>
+      </section>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,2 +1,8 @@
-# env files (can opt-in for committing if needed)
-.env*
+.env
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+staticfiles/
+.coverage
+.pytest_cache/
