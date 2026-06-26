@@ -1,87 +1,86 @@
 # Documents Archive
 
-Internal document archive for Protokolle and Statuten. Members can browse Sitzungsprotokolle (AV, AC, DaC, CC) and Vereinsdokumente (Satzung, Vereinsordnung, Beschlussbuch, Fuxenfibel) and view them as PDFs directly in the browser.
+Django rebuild of the internal documents archive. The app uses the existing `documents` PostgreSQL table, displays protocol collections and statute documents, and streams PDF files from the archive directory.
 
 ## Tech Stack
 
-## UI Layout
+| Technology | Description |
+|---|---|
+| Django | Server-rendered web app, routing, templates, tests |
+| PostgreSQL | Existing metadata database |
+| psycopg | PostgreSQL driver for Django |
+| Django templates | Sidebar, lists, detail panels, embedded PDF viewer |
 
-The app uses a collapsible sidebar navigation with a content area on the right.
+## Features
 
-**Protokolle view** (sidebar + list + PDF viewer):
+- Internal sidebar navigation for Protokolle and Statuten
+- Protocol collection pages for AV, AC, DaC and CC
+- Search, year filter and semester filter for protocol lists
+- Single-document pages for Satzung, Vereinsordnung, Beschlussbuch and Fuxenfibel
+- Secure PDF streaming through `/api/files/<id>/`
+- Safe archive path handling below `ARCHIVE_ROOT`
+- Unit tests for labels, filters, file path safety and core views
 
-```
-┌────────────────────┬─────────────────────────────┬──────────────────────────────┐
-│ Hauptmenü          │ Protokoll-Liste             │ PDF-Viewer                   │
-│                    │                             │                              │
-│ Protokolle         │ AC-Protokolle               │ 2. AC 14.11.2023.pdf         │
-│   AV-Protokolle    │ [Suche...]                  │                              │
-│ > AC-Protokolle    │ [Jahr ▼] [Semester ▼]       │ ┌──────────────────────────┐ │
-│   DaC-Protokolle   │                             │ │                          │ │
-│   CC-Protokolle    │ 1. AC 02.11.2020            │ │        PDF               │ │
-│                    │ 2. AC 16.11.2020            │ │                          │ │
-│ Statuten           │ 3. AC 30.11.2020            │ └──────────────────────────┘ │
-│   Satzung          │ ...                         │                              │
-└────────────────────┴─────────────────────────────┴──────────────────────────────┘
-```
+## Environment
 
-**Statuten view** (sidebar + PDF viewer):
-
-```
-┌────────────────────┬──────────────────────────────────────────────┐
-│ Hauptmenü          │ PDF-Viewer                                   │
-│                    │                                              │
-│ Protokolle         │ Satzung                                      │
-│   AV-Protokolle    │ ┌──────────────────────────────────────────┐ │
-│   AC-Protokolle    │ │                                          │ │
-│   DaC-Protokolle   │ │                 PDF                      │ │
-│   CC-Protokolle    │ │                                          │ │
-│                    │ └──────────────────────────────────────────┘ │
-│ Statuten           │                                              │
-│ > Satzung          │                                              │
-│   Vereinsordnung   │                                              │
-│   Beschlussbuch    │                                              │
-│   Fuxenfibel       │                                              │
-└────────────────────┴──────────────────────────────────────────────┘
-```
-
-## Project Structure
-
-```
-├── app/
-│   ├── api/files/[id]/          # API route: fetch a PDF file by ID
-│   ├── intern/                  # Internal area (authenticated route)
-│   │   ├── protokolle/[type]/   # Protokolle pages (av, ac, dac, cc)
-│   │   └── statuten/[document]/  # Statuten pages
-│   └── layout.tsx               # Root layout
-├── components/
-│   └── ui/                      # shadcn/ui components
-├── hooks/                       # React hooks (e.g. use-mobile)
-├── lib/                         # Server utilities, format helpers, API helpers
-├── types/                       # TypeScript type definitions
-└── public/                      # Static assets (Wappen, SVGs)
-```
-
-## Environment Variables
-
-Create a `.env.local` file in the project root:
+Create `.env` from `.env.example`:
 
 ```env
+DJANGO_SECRET_KEY=change-me
+DJANGO_DEBUG=true
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+
 DB_HOST=127.0.0.1
-DB_PORT=
+DB_PORT=5432
 DB_USER=
 DB_PASSWORD=
 DB_NAME=
-ARCHIVE_ROOT=
+
+ARCHIVE_ROOT=/home/angel/projects/documents-archive
 ```
 
-| Variable | Description |
-|---|---|
-| `DB_HOST` | PostgreSQL host |
-| `DB_PORT` | PostgreSQL port (default: `5432`) |
-| `DB_USER` | Database user |
-| `DB_PASSWORD` | Database password |
-| `DB_NAME` | Database name |
-| `ARCHIVE_ROOT` | Absolute path to the directory where PDF files are stored |
+`ARCHIVE_ROOT` is the absolute local base path. If the database contains `data/archive/example.pdf`, Django reads:
+
+```txt
+ARCHIVE_ROOT/data/archive/example.pdf
+```
+
+If `DB_NAME` is empty, Django falls back to SQLite so tests and `manage.py check` can run without the production database.
 
 ## Local Development
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python manage.py runserver
+```
+
+Open:
+
+```txt
+http://127.0.0.1:8000/intern/
+```
+
+Run checks and tests:
+
+```bash
+python manage.py check
+python manage.py test
+```
+
+## Database
+
+The `archive.Document` model maps to the existing `documents` table with `managed = False`. Django will not create or migrate this table automatically.
+
+Expected columns:
+
+- `id`
+- `doc_type`
+- `convent_type`
+- `is_extraordinary`
+- `convent_number`
+- `version_date`
+- `uploaded_at`
+- `archive_path`
+- `file_size_bytes`
