@@ -85,3 +85,17 @@ ARCHIVE_ROOT=
 | `ARCHIVE_ROOT` | Absolute path to the directory where PDF files are stored |
 
 ## Local Development
+# Virtuelle Umgebung erstellen
+python -m venv .venv
+
+# Aktivieren (Windows)
+.venv\Scripts\activate
+
+# Aktivieren (Linux/macOS)
+source .venv/bin/activate
+
+# Abhängigkeiten installieren
+pip install -r requirements.txt
+
+# Django-Server starten
+python manage.py runserver
