@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Login · ADV Laetitia Intern{% endblock %}
+
+{% block content %}
+<main class="flex min-h-screen flex-col items-center justify-center gap-8 bg-zinc-50 p-4">
+    <h1 class="text-4xl font-semibold text-zinc-900">ADV Laetitia Intern</h1>
+
+    <div
+        class="w-full max-w-sm overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm"
+        x-data="{ mode: '{{ initial_mode }}' }"
+    >
+        <!-- Tab switcher -->
+        <div class="flex gap-3 p-6 pb-4">
+            <button
+                type="button"
+                @click="mode = 'login'"
+                :class="mode === 'login'
+                    ? 'bg-zinc-900 text-white ring-2 ring-zinc-900/30'
+                    : 'border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50'"
+                class="flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            >Login</button>
+            <button
+                type="button"
+                @click="mode = 'register'"
+                :class="mode === 'register'
+                    ? 'bg-zinc-900 text-white ring-2 ring-zinc-900/30'
+                    : 'border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50'"
+                class="flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            >Registrieren</button>
+        </div>
+
+        <div class="border-t border-zinc-200"></div>
+
+        <!-- Login form -->
+        <div x-show="mode === 'login'" class="p-6">
+            <form method="post" class="flex flex-col gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_mode" value="login">
+                <input type="hidden" name="next" value="{{ next }}">
+
+                {% if error %}
+                <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ error }}</div>
+                {% endif %}
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="login-email" class="text-sm font-medium text-zinc-700">Email</label>
+                    <input
+                        id="login-email" name="email" type="email" autocomplete="email"
+                        class="rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-zinc-400"
+                        required
+                    >
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="login-password" class="text-sm font-medium text-zinc-700">Passwort</label>
+                    <input
+                        id="login-password" name="password" type="password" autocomplete="current-password"
+                        class="rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-zinc-400"
+                        required
+                    >
+                </div>
+
+                <a href="#" class="ml-auto text-sm text-zinc-600 underline-offset-4 hover:underline">Passwort vergessen?</a>
+
+                <button
+                    type="submit"
+                    class="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+                >Login</button>
+            </form>
+        </div>
+
+        <!-- Register form -->
+        <div x-show="mode === 'register'" x-cloak class="p-6">
+            <form method="post" class="flex flex-col gap-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_mode" value="register">
+
+                {% if register_error %}
+                <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ register_error }}</div>
+                {% endif %}
+                {% if register_success %}
+                <div class="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{{ register_success }}</div>
+                {% endif %}
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="reg-email" class="text-sm font-medium text-zinc-700">E-Mail</label>
+                    <input
+                        id="reg-email" name="email" type="email" autocomplete="email"
+                        class="rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-zinc-400"
+                        required
+                    >
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="reg-password" class="text-sm font-medium text-zinc-700">Passwort</label>
+                    <input
+                        id="reg-password" name="password" type="password" autocomplete="new-password"
+                        class="rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-zinc-400"
+                        required
+                    >
+                    <p class="text-xs text-zinc-400">Mind. 8 Zeichen, ein Großbuchstabe und ein Sonderzeichen.</p>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="reg-password-confirm" class="text-sm font-medium text-zinc-700">Passwort wiederholen</label>
+                    <input
+                        id="reg-password-confirm" name="password_confirm" type="password" autocomplete="new-password"
+                        class="rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm outline-none focus:ring-2 focus:ring-zinc-400"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+                >Registrieren</button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

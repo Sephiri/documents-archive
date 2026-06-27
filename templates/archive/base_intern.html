@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: true }">
+
+    <!-- Sidebar -->
+    <aside
+        class="flex flex-col overflow-hidden border-r border-zinc-200 bg-white transition-all duration-200 shrink-0"
+        :class="sidebarOpen ? 'w-64' : 'w-0'"
+    >
+        <a href="/intern/" class="block shrink-0 px-4 py-4">
+            <span class="text-base font-semibold text-zinc-900">ADV Laetitia</span>
+            <span class="ml-2 rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">Intern</span>
+        </a>
+
+        <div class="shrink-0 border-t border-zinc-200"></div>
+
+        <nav class="flex-1 overflow-y-auto p-2">
+            {% for group in nav_main %}
+            <div class="mb-4">
+                <div class="select-none rounded-md px-3 py-1.5 text-xs font-semibold text-zinc-500{% if group.group_active %} bg-zinc-100{% endif %}">
+                    {{ group.title }}
+                </div>
+                <ul class="mt-1 space-y-0.5 pl-2">
+                    {% for item in group.items %}
+                    <li>
+                        <a
+                            href="{{ item.url }}"
+                            class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors{% if item.active %} bg-zinc-900 text-white{% else %} text-zinc-700 hover:bg-zinc-100{% endif %}"
+                        >
+                            {% if item.active %}
+                            <svg class="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                            </svg>
+                            {% endif %}
+                            <span class="truncate">{{ item.title }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </nav>
+
+        <div class="shrink-0 border-t border-zinc-200 p-3">
+            <a
+                href="/logout/"
+                class="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100"
+            >
+                <svg class="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clip-rule="evenodd"/>
+                    <path fill-rule="evenodd" d="M6 10a.75.75 0 01.75-.75h9.546l-1.048-.943a.75.75 0 111.004-1.114l2.5 2.25a.75.75 0 010 1.114l-2.5 2.25a.75.75 0 11-1.004-1.114l1.048-.943H6.75A.75.75 0 016 10z" clip-rule="evenodd"/>
+                </svg>
+                Abmelden
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+
+        <!-- Top header -->
+        <header class="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b border-zinc-200 bg-white px-4">
+            <button
+                @click="sidebarOpen = !sidebarOpen"
+                class="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100"
+                aria-label="Sidebar umschalten"
+            >
+                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 012 10z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+
+            <div class="mx-2 h-4 w-px bg-zinc-200"></div>
+
+            <nav class="flex items-center gap-1.5 text-sm">
+                <span class="hidden text-zinc-500 md:inline">{% block breadcrumb_main %}Intern{% endblock %}</span>
+                <svg class="hidden h-4 w-4 text-zinc-400 md:block" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                </svg>
+                <span class="font-medium text-zinc-900">{% block breadcrumb_current %}Übersicht{% endblock %}</span>
+            </nav>
+        </header>
+
+        <!-- Page content -->
+        <main class="flex flex-1 flex-col gap-4 overflow-auto p-4">
+            {% block page_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
