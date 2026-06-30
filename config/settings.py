@@ -1,29 +1,17 @@
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / ".env")
 
-def load_env_file(path: Path) -> None:
-    if not path.exists():
-        return
-
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-load_env_file(BASE_DIR / ".env")
-
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-documents-archive-key")
-DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-placeholder-change-me")
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
+    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
     if host.strip()
 ]
 
@@ -47,7 +35,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "documents_archive.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -64,17 +52,17 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "documents_archive.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 if os.getenv("DB_NAME"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-            "PORT": os.getenv("DB_PORT", "5432"),
+            "NAME": os.environ["DB_NAME"],
             "USER": os.getenv("DB_USER", ""),
             "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "NAME": os.environ["DB_NAME"],
+            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("DB_PORT", "5432"),
         }
     }
 else:
@@ -84,6 +72,13 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
 
 LANGUAGE_CODE = "de-de"
 TIME_ZONE = "Europe/Berlin"

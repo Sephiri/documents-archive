@@ -1,11 +1,39 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
 version: 2
 updates:
+  # Python dependencies (requirements.txt)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "Sephiri"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps):"
+    pull-request-branch-name:
+      separator: "/"
+    groups:
+      security:
+        applies-to: "security-updates"
+        update-types:
+          - "patch"
+          - "minor"
+          - "major"
+      patch:
+        applies-to: "version-updates"
+        update-types:
+          - "patch"
+      minor:
+        applies-to: "version-updates"
+        update-types:
+          - "minor"
+    # Major version bumps (e.g. Django 6 -> 7) are intentionally left ungrouped,
+    # so they always show up as their own PR instead of being hidden inside a batch.

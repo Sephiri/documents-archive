@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from django.core.cache import cache
 from django.db.models import F
 
-from archive.labels import DocumentData, ListDocument, calc_semester, to_date_only
+from archive.labels import DocumentData, ListDocument, calc_semester, get_document_list_title, to_date_only
 from archive.models import Document
 
 
@@ -33,8 +33,9 @@ def document_to_data(document: Document) -> DocumentData:
 def document_to_list_data(document: Document) -> ListDocument:
     data = document_to_data(document)
     return ListDocument(
-        **data.__dict__,
+        **asdict(data),
         semester=calc_semester(data.version_date),
+        title=get_document_list_title(data),
     )
 
 
@@ -55,10 +56,7 @@ def get_filtered_documents(filters: DocumentFilters) -> list[ListDocument]:
     if filters.year:
         queryset = queryset.filter(version_date__year=filters.year)
 
-    queryset = queryset.order_by(
-        "-version_date",
-        F("convent_number").desc(nulls_last=True),
-    )[:200]
+    queryset = queryset.order_by("-version_date", F("convent_number").desc(nulls_last=True))[:200]
 
     return [document_to_list_data(document) for document in queryset]
 
@@ -69,7 +67,7 @@ def get_document_by_id(document_id: int) -> DocumentData | None:
 
 
 def get_single_document_by_doc_type(doc_type: str) -> DocumentData | None:
-    document = Document.objects.filter(doc_type=doc_type).first()
+    document = Document.objects.filter(doc_type=doc_type).order_by("-version_date").first()
     return document_to_data(document) if document else None
 
 

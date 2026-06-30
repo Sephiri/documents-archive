@@ -1,34 +1,35 @@
 # Documents Archive
 
-Django rebuild of the internal documents archive. The app uses the existing `documents` PostgreSQL table, displays protocol collections and statute documents, and streams PDF files from the archive directory.
+Django rebuild of [documents-archive-nextjs](https://github.com/Sephiri/documents-archive-nextjs). The app uses the existing `documents` PostgreSQL table, shows protocol collections and statute documents, and streams PDF files from the archive directory.
 
 ## Tech Stack
 
 | Technology | Description |
 |---|---|
-| Django | Server-rendered web app, routing, templates, tests |
+| Django 6 | Server-rendered web app, routing, templates, tests |
 | PostgreSQL | Existing metadata database |
 | psycopg | PostgreSQL driver for Django |
 | Django templates | Sidebar, lists, detail panels, embedded PDF viewer |
+| Custom CSS | Next/shadcn-inspired UI without a frontend build step |
 
 ## Features
 
 - Internal sidebar navigation for Protokolle and Statuten
 - Protocol collection pages for AV, AC, DaC and CC
-- Search, year filter and semester filter for protocol lists
+- Client-side search, year filter and semester filter for protocol lists
 - Single-document pages for Satzung, Vereinsordnung, Beschlussbuch and Fuxenfibel
 - Secure PDF streaming through `/api/files/<id>/`
 - Safe archive path handling below `ARCHIVE_ROOT`
-- Unit tests for labels, filters, file path safety and core views
+- Unit tests for labels, filters, path safety and core views
 
-## Environment
+## Environment Variables
 
-Create `.env` from `.env.example`:
+Copy `.env.example` to `.env` and fill in the values:
 
 ```env
-DJANGO_SECRET_KEY=change-me
-DJANGO_DEBUG=true
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_SECRET_KEY=change-me-to-a-random-50-char-string
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
 
 DB_HOST=127.0.0.1
 DB_PORT=5432
@@ -45,14 +46,15 @@ ARCHIVE_ROOT=/home/angel/projects/documents-archive
 ARCHIVE_ROOT/data/archive/example.pdf
 ```
 
-If `DB_NAME` is empty, Django falls back to SQLite so tests and `manage.py check` can run without the production database.
+If `DB_NAME` is empty, Django falls back to SQLite so checks and most tests can run without the production database.
 
 ## Local Development
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
+cp .env.example .env
 python manage.py runserver
 ```
 
@@ -69,18 +71,6 @@ python manage.py check
 python manage.py test
 ```
 
-## Database
+## Database Notes
 
-The `archive.Document` model maps to the existing `documents` table with `managed = False`. Django will not create or migrate this table automatically.
-
-Expected columns:
-
-- `id`
-- `doc_type`
-- `convent_type`
-- `is_extraordinary`
-- `convent_number`
-- `version_date`
-- `uploaded_at`
-- `archive_path`
-- `file_size_bytes`
+The `Document` model uses `managed = False`, so Django reads the existing `documents` table without creating or altering it. Django migrations are only needed for Django's own auth/session/admin tables.

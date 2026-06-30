@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 import logging
 
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.http import content_disposition_header
 
+from archive.filters import get_semester_options, get_year_options
 from archive.files import open_archive_file
-from archive.filters import filter_documents, get_semester_options, get_year_options
 from archive.labels import (
     PROTOCOL_TYPE_LABELS,
     STATUTE_TYPE_LABELS,
@@ -31,13 +32,40 @@ def root_redirect(request):
     return redirect("intern-home")
 
 
+def build_nav(current_path: str) -> list[dict]:
+    return [
+        {
+            "title": "Protokolle",
+            "group_active": current_path.startswith("/intern/protokolle"),
+            "items": [
+                {
+                    "title": label,
+                    "url": f"/intern/protokolle/{key}/",
+                    "active": current_path == f"/intern/protokolle/{key}/",
+                }
+                for key, label in PROTOCOL_TYPE_LABELS.items()
+            ],
+        },
+        {
+            "title": "Statuten",
+            "group_active": current_path.startswith("/intern/statuten"),
+            "items": [
+                {
+                    "title": label,
+                    "url": f"/intern/statuten/{key}/",
+                    "active": current_path == f"/intern/statuten/{key}/",
+                }
+                for key, label in STATUTE_TYPE_LABELS.items()
+            ],
+        },
+    ]
+
+
 def base_context(request, main: str, current: str) -> dict:
     return {
-        "protocol_type_labels": PROTOCOL_TYPE_LABELS,
-        "statute_type_labels": STATUTE_TYPE_LABELS,
+        "nav_main": build_nav(request.path),
         "breadcrumb_main": main,
         "breadcrumb_current": current,
-        "current_path": request.path,
     }
 
 
@@ -58,39 +86,17 @@ def protocol_view(request, protocol_type: str):
     if not is_protocol_type(protocol_type):
         raise Http404("Protokolltyp nicht gefunden")
 
-    initial_documents = get_filtered_documents(
-        DocumentFilters(doc_type="protokoll", convent_type=protocol_type)
-    )
-
-    search_term = request.GET.get("q", "")
-    active_semester = request.GET.get("semester", "")
-    active_year = request.GET.get("year", "")
+    documents = get_filtered_documents(DocumentFilters(doc_type="protokoll", convent_type=protocol_type))
     selected_id = request.GET.get("selected")
-
-    documents = filter_documents(
-        initial_documents,
-        semester=active_semester or None,
-        year=active_year or None,
-        search_term=search_term,
-    )
-
-    selected_document = next(
-        (document for document in initial_documents if str(document.id) == selected_id),
-        None,
-    )
 
     context = {
         **base_context(request, "Protokolle", PROTOCOL_TYPE_LABELS[protocol_type]),
         "title": PROTOCOL_TYPE_LABELS[protocol_type],
-        "documents": documents,
+        "documents_json": [asdict(document) for document in documents],
         "document_count": len(documents),
-        "selected_document": selected_document,
-        "selected_panel": panel_context(selected_document) if selected_document else None,
-        "semester_options": get_semester_options(initial_documents),
-        "year_options": get_year_options(initial_documents),
-        "search_term": search_term,
-        "active_semester": active_semester,
-        "active_year": active_year,
+        "selected_id": int(selected_id) if selected_id and selected_id.isdigit() else None,
+        "semester_options_json": get_semester_options(documents),
+        "year_options_json": get_year_options(documents),
     }
 
     return render(request, "archive/collection.html", context)
@@ -119,25 +125,11 @@ def file_view(request, document_id: int):
 
     try:
         file_handle = open_archive_file(document.archive_path)
-    except OSError:
-        logger.exception("Archive file could not be opened")
-        return HttpResponse(
-            "Datei konnte nicht geladen werden",
-            status=500,
-            content_type="text/plain",
-        )
-    except ValueError:
-        logger.exception("Unsafe archive path rejected")
-        return HttpResponse(
-            "Datei konnte nicht geladen werden",
-            status=500,
-            content_type="text/plain",
-        )
+    except (OSError, ValueError):
+        logger.exception("Archive file could not be loaded")
+        return HttpResponse("Datei konnte nicht geladen werden", status=500, content_type="text/plain")
 
     filename = f"{get_document_list_title(document)}.pdf"
     response = FileResponse(file_handle, content_type="application/pdf")
-    response.headers["Content-Disposition"] = content_disposition_header(
-        as_attachment=False,
-        filename=filename,
-    )
+    response.headers["Content-Disposition"] = content_disposition_header(False, filename)
     return response

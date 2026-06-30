@@ -8,44 +8,54 @@
     <link rel="stylesheet" href="{% static 'archive/styles.css' %}">
   </head>
   <body>
-    <div class="app-shell">
+    <div class="sidebar-provider">
       <aside class="sidebar">
-        <a class="brand" href="{% url 'intern-home' %}">
-          <span class="brand-mark">L</span>
-          <span class="brand-text">Intern</span>
-        </a>
+        <div class="sidebar-header">
+          <a class="brand-grid" href="{% url 'intern-home' %}">
+            <img src="https://raw.githubusercontent.com/Sephiri/documents-archive-nextjs/main/public/kleines_wappen_transparent.png" alt="Wappen Laetitia" class="brand-crest">
+            <img src="{% static 'archive/schrift-intern-cropped.svg' %}" alt="Intern" class="brand-wordmark">
+          </a>
+        </div>
 
-        <nav class="nav">
-          <section class="nav-section">
-            <h2>Protokolle</h2>
-            {% for key, label in protocol_type_labels.items %}
-              <a class="nav-link{% if current_path == '/intern/protokolle/'|add:key|add:'/' %} active{% endif %}" href="{% url 'protocol-view' key %}">
-                {% if current_path == '/intern/protokolle/'|add:key|add:'/' %}<span aria-hidden="true">›</span>{% endif %}
-                {{ label }}
-              </a>
-            {% endfor %}
-          </section>
+        <div class="separator"></div>
 
-          <section class="nav-section">
-            <h2>Statuten</h2>
-            {% for key, label in statute_type_labels.items %}
-              <a class="nav-link{% if current_path == '/intern/statuten/'|add:key|add:'/' %} active{% endif %}" href="{% url 'statute-view' key %}">
-                {% if current_path == '/intern/statuten/'|add:key|add:'/' %}<span aria-hidden="true">›</span>{% endif %}
-                {{ label }}
-              </a>
-            {% endfor %}
-          </section>
-        </nav>
+        <div class="sidebar-content">
+          <nav class="sidebar-group">
+            <ul class="sidebar-menu">
+              {% for group in nav_main %}
+                <li class="sidebar-menu-item">
+                  <div class="nav-group-title{% if group.group_active %} active{% endif %}">{{ group.title }}</div>
+                  <ul class="sidebar-sub">
+                    {% for item in group.items %}
+                      <li>
+                        <a class="sidebar-sub-button{% if item.active %} active{% endif %}" href="{{ item.url }}">
+                          <span class="sub-button-content">
+                            {% if item.active %}<span class="nav-chevron" aria-hidden="true">›</span>{% endif %}
+                            <span>{{ item.title }}</span>
+                          </span>
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        </div>
       </aside>
 
-      <div class="content-shell">
+      <div class="sidebar-inset">
         <header class="topbar">
-          <span class="breadcrumb-muted">{{ breadcrumb_main }}</span>
-          <span class="breadcrumb-separator">/</span>
-          <strong>{{ breadcrumb_current }}</strong>
+          <button class="sidebar-trigger" type="button" aria-label="Sidebar umschalten">☰</button>
+          <div class="separator-vertical"></div>
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <span class="breadcrumb-main">{{ breadcrumb_main }}</span>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current">{{ breadcrumb_current }}</span>
+          </nav>
         </header>
 
-        <main class="main-content">
+        <main class="page-main">
           {% block content %}{% endblock %}
         </main>
       </div>

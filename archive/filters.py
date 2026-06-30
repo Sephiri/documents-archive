@@ -1,4 +1,4 @@
-from archive.labels import ListDocument, get_document_list_title
+from archive.labels import ListDocument
 
 
 def get_semester_options(documents: list[ListDocument]) -> list[str]:
@@ -25,10 +25,7 @@ def filter_documents(
     for document in documents:
         matches_semester = not semester or document.semester == semester
         matches_year = not year or document.version_date.startswith(year)
-        matches_search = (
-            not normalized_search
-            or normalized_search in get_document_list_title(document).lower()
-        )
+        matches_search = not normalized_search or normalized_search in document.title.lower()
 
         if matches_semester and matches_year and matches_search:
             filtered_documents.append(document)

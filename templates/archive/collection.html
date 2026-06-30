@@ -1,78 +1,249 @@
 {% extends "archive/base.html" %}
-{% load archive_extras %}
 
 {% block title %}{{ title }} · Documents Archive{% endblock %}
 
 {% block content %}
-  <section class="collection-grid">
-    <article class="card list-card">
-      <header class="card-header">
-        <h1>{{ title }}</h1>
+  {{ documents_json|json_script:"documents-data" }}
+  {{ semester_options_json|json_script:"semester-options-data" }}
+  {{ year_options_json|json_script:"year-options-data" }}
+
+  <main class="collection-grid" data-selected-id="{{ selected_id|default_if_none:'' }}">
+    <section class="card list-card">
+      <header class="card-header card-header-compact">
+        <h1 class="card-title">{{ title }}</h1>
       </header>
 
-      <form class="toolbar" method="get">
-        <label class="search">
-          <span class="sr-only">Suche</span>
-          <input type="search" name="q" value="{{ search_term }}" placeholder="Suche...">
-        </label>
+      <div class="card-content collection-content">
+        <div class="toolbar-row">
+          <form class="search-form" role="search">
+            <label class="sr-only" for="document-search">Suche</label>
+            <div class="button-group">
+              <input id="document-search" name="query" type="search" placeholder="Durchsuchen..." class="input search-input">
+              <button type="submit" class="button button-outline button-icon" aria-label="Suche">⌕</button>
+            </div>
+          </form>
 
-        <select name="semester" aria-label="Semester">
-          <option value="">Alle Semester</option>
-          {% for semester in semester_options %}
-            <option value="{{ semester }}"{% if semester == active_semester %} selected{% endif %}>{{ semester }}</option>
-          {% endfor %}
-        </select>
+          <div class="filter-bar">
+            <div class="dropdown" data-dropdown>
+              <button type="button" class="button button-outline button-small" data-dropdown-trigger>
+                <span aria-hidden="true">≡</span>
+                <span>Filter</span>
+              </button>
+              <div class="dropdown-content" data-dropdown-content>
+                <div class="dropdown-label">Filtern nach</div>
+                <div class="dropdown-sub">
+                  <button type="button" class="dropdown-sub-trigger">Semester <span>›</span></button>
+                  <div class="dropdown-sub-content" id="semester-options"></div>
+                </div>
+                <div class="dropdown-sub">
+                  <button type="button" class="dropdown-sub-trigger">Jahr <span>›</span></button>
+                  <div class="dropdown-sub-content" id="year-options"></div>
+                </div>
+              </div>
+            </div>
 
-        <select name="year" aria-label="Jahr">
-          <option value="">Alle Jahre</option>
-          {% for year in year_options %}
-            <option value="{{ year }}"{% if year == active_year %} selected{% endif %}>{{ year }}</option>
-          {% endfor %}
-        </select>
+            <div class="active-filter" hidden>
+              <span class="active-filter-label"></span>
+              <button type="button" class="button button-ghost button-icon button-small" aria-label="Filter zurücksetzen" id="clear-filter">⊘</button>
+            </div>
+          </div>
+        </div>
 
-        <button type="submit">Filtern</button>
-        <a class="button-secondary" href="{{ request.path }}">Zurücksetzen</a>
-      </form>
+        <p class="result-count"><span id="document-count">{{ document_count }}</span> Protokoll(e) gefunden</p>
 
-      <p class="result-count">{{ document_count }} Protokoll(e) gefunden</p>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Titel</th>
-              <th>Semester</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for entry in documents %}
-              <tr class="{% if selected_document and selected_document.id == entry.id %}selected{% endif %}">
-                <td>
-                  <a href="?selected={{ entry.id }}{% if search_term %}&q={{ search_term|urlencode }}{% endif %}{% if active_semester %}&semester={{ active_semester|urlencode }}{% endif %}{% if active_year %}&year={{ active_year|urlencode }}{% endif %}">
-                    {{ entry|document_title }}
-                  </a>
-                </td>
-                <td><span class="badge">{{ entry.semester }}</span></td>
-              </tr>
-            {% empty %}
+        <div class="table-shell">
+          <table class="document-table">
+            <thead>
               <tr>
-                <td colspan="2">
-                  <div class="empty-inline">Keine Protokolle für diese Filter gefunden.</div>
-                </td>
+                <th>Titel</th>
+                <th class="semester-col">Semester</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody id="documents-table-body"></tbody>
+          </table>
+        </div>
       </div>
-    </article>
+    </section>
 
-    {% if selected_panel %}
-      {% include "archive/partials/document_panel.html" with panel=selected_panel %}
-    {% else %}
-      <section class="empty-card">
-        <h2>Kein Dokument ausgewählt</h2>
-        <p>Wähle links ein Dokument aus, um Details zu sehen.</p>
-      </section>
-    {% endif %}
-  </section>
+    <section id="document-panel" class="document-panel-slot"></section>
+  </main>
+
+  <script>
+    (function () {
+      const documents = JSON.parse(document.getElementById("documents-data").textContent);
+      const semesters = JSON.parse(document.getElementById("semester-options-data").textContent);
+      const years = JSON.parse(document.getElementById("year-options-data").textContent);
+      const selectedIdRaw = document.querySelector(".collection-grid").dataset.selectedId;
+      let selectedId = selectedIdRaw ? Number(selectedIdRaw) : null;
+      let activeFilter = null;
+      let searchTerm = "";
+
+      const tableBody = document.getElementById("documents-table-body");
+      const panel = document.getElementById("document-panel");
+      const count = document.getElementById("document-count");
+      const searchInput = document.getElementById("document-search");
+      const activeFilterEl = document.querySelector(".active-filter");
+      const activeFilterLabel = document.querySelector(".active-filter-label");
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>'"]/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        })[char]);
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === null || bytes === undefined) return "Unbekannt";
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+      }
+
+      function matches(document) {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+        const matchesFilter = !activeFilter
+          ? true
+          : activeFilter.kind === "semester"
+            ? document.semester === activeFilter.value
+            : document.version_date.startsWith(activeFilter.value);
+        const matchesSearch = normalizedSearch.length === 0 || document.title.toLowerCase().includes(normalizedSearch);
+        return matchesFilter && matchesSearch;
+      }
+
+      function renderOptions(targetId, values, kind) {
+        const target = document.getElementById(targetId);
+        target.innerHTML = values.map((value) => `
+          <button type="button" class="dropdown-item" data-filter-kind="${kind}" data-filter-value="${escapeHtml(value)}">
+            <span>${escapeHtml(value)}</span>
+          </button>
+        `).join("");
+      }
+
+      function renderTable() {
+        const filtered = documents.filter(matches);
+        count.textContent = filtered.length;
+
+        if (filtered.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="2">
+                <div class="empty-inline">Keine Protokolle fuer diese Filter gefunden.</div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tableBody.innerHTML = filtered.map((entry) => `
+          <tr class="${selectedId === entry.id ? "selected" : ""}" data-document-id="${entry.id}">
+            <td class="font-medium">${escapeHtml(entry.title)}</td>
+            <td>
+              <span class="badge"><span aria-hidden="true">◷</span>${escapeHtml(entry.semester || "-")}</span>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      function renderPanel() {
+        const selected = documents.find((document) => document.id === selectedId);
+
+        if (!selected) {
+          panel.innerHTML = `
+            <div class="single-document-view">
+              <section class="card document-card empty-document-card">
+                <header class="card-header"><h2 class="card-title">Kein Dokument ausgewählt</h2></header>
+                <div class="card-content muted-text">Wähle links ein Dokument aus, um Details zu sehen.</div>
+              </section>
+            </div>
+          `;
+          return;
+        }
+
+        panel.innerHTML = `
+          <div class="single-document-view">
+            <section class="card document-card">
+              <header class="card-header document-header">
+                <div class="pdf-icon" aria-hidden="true">PDF</div>
+                <div class="document-heading">
+                  <h2 class="card-title truncate">${escapeHtml(selected.title)}</h2>
+                  <div class="muted-text">Zugriffsstatus: Alle Mitglieder · Hochgeladen: ${escapeHtml(selected.uploaded_at_formatted)} · Größe: ${escapeHtml(formatFileSize(selected.file_size_bytes))}</div>
+                </div>
+              </header>
+              <div class="card-content document-content">
+                <div class="separator"></div>
+                <div class="pdf-frame"><iframe src="/api/files/${selected.id}/" title="${escapeHtml(selected.title)}"></iframe></div>
+              </div>
+            </section>
+          </div>
+        `;
+      }
+
+      function renderActiveFilter() {
+        if (!activeFilter) {
+          activeFilterEl.hidden = true;
+          activeFilterLabel.textContent = "";
+          return;
+        }
+
+        activeFilterEl.hidden = false;
+        activeFilterLabel.innerHTML = `${activeFilter.kind === "semester" ? "Semester" : "Jahr"}: <span>${escapeHtml(activeFilter.value)}</span>`;
+      }
+
+      function render() {
+        renderActiveFilter();
+        renderTable();
+        renderPanel();
+      }
+
+      renderOptions("semester-options", semesters, "semester");
+      renderOptions("year-options", years, "year");
+
+      searchInput.addEventListener("input", (event) => {
+        searchTerm = event.target.value;
+        render();
+      });
+
+      document.querySelector(".search-form").addEventListener("submit", (event) => event.preventDefault());
+      document.getElementById("clear-filter").addEventListener("click", () => {
+        activeFilter = null;
+        render();
+      });
+
+      document.addEventListener("click", (event) => {
+        const trigger = event.target.closest("[data-dropdown-trigger]");
+        const dropdown = event.target.closest("[data-dropdown]");
+        const filterOption = event.target.closest("[data-filter-kind]");
+        const row = event.target.closest("tr[data-document-id]");
+
+        document.querySelectorAll("[data-dropdown]").forEach((element) => {
+          if (!dropdown || element !== dropdown) element.classList.remove("open");
+        });
+
+        if (trigger) {
+          trigger.closest("[data-dropdown]").classList.toggle("open");
+          return;
+        }
+
+        if (filterOption) {
+          activeFilter = { kind: filterOption.dataset.filterKind, value: filterOption.dataset.filterValue };
+          filterOption.closest("[data-dropdown]").classList.remove("open");
+          render();
+          return;
+        }
+
+        if (row) {
+          selectedId = Number(row.dataset.documentId);
+          const url = new URL(window.location.href);
+          url.searchParams.set("selected", selectedId);
+          window.history.replaceState({}, "", url);
+          render();
+        }
+      });
+
+      render();
+    })();
+  </script>
 {% endblock %}

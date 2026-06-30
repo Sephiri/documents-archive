@@ -6,9 +6,9 @@
   {% if selected_panel %}
     {% include "archive/partials/document_panel.html" with panel=selected_panel %}
   {% else %}
-    <section class="empty-card">
-      <h1>{{ empty_title }}</h1>
-      <p>{{ empty_description }}</p>
+    <section class="card document-card empty-document-card">
+      <header class="card-header"><h1 class="card-title">{{ empty_title }}</h1></header>
+      <div class="card-content muted-text">{{ empty_description }}</div>
     </section>
   {% endif %}
 {% endblock %}

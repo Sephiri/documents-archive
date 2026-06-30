@@ -8,13 +8,7 @@ from django.urls import reverse
 
 from archive.files import get_safe_archive_path
 from archive.filters import filter_documents, get_semester_options, get_year_options
-from archive.labels import (
-    DocumentData,
-    ListDocument,
-    calc_semester,
-    format_file_size,
-    get_document_list_title,
-)
+from archive.labels import DocumentData, ListDocument, calc_semester, format_file_size, get_document_list_title
 
 
 def make_document() -> DocumentData:
@@ -38,7 +32,7 @@ def make_list_document(
     version_date: str = "2026-06-06",
     semester: str = "SS26",
 ) -> ListDocument:
-    return ListDocument(
+    document = DocumentData(
         id=document_id,
         doc_type="protokoll",
         convent_type=convent_type,
@@ -48,8 +42,8 @@ def make_list_document(
         uploaded_at=version_date,
         archive_path=f"data/archive/{document_id}.pdf",
         file_size_bytes=2048,
-        semester=semester,
     )
+    return ListDocument(**document.__dict__, semester=semester, title=get_document_list_title(document))
 
 
 class LabelTests(SimpleTestCase):
@@ -59,9 +53,7 @@ class LabelTests(SimpleTestCase):
         self.assertEqual(calc_semester("2026-10-06"), "WS26/27")
 
     def test_protocol_title(self):
-        document = make_list_document()
-
-        self.assertEqual(get_document_list_title(document), "2. AC 06.06.2026")
+        self.assertEqual(get_document_list_title(make_list_document()), "2. AC 06.06.2026")
 
     def test_statute_title(self):
         self.assertEqual(get_document_list_title(make_document()), "Satzung")
@@ -86,17 +78,14 @@ class FilterTests(SimpleTestCase):
 
     def test_filter_by_semester(self):
         filtered = filter_documents(self.documents, semester="SS26")
-
         self.assertEqual([document.id for document in filtered], [1])
 
     def test_filter_by_year(self):
         filtered = filter_documents(self.documents, year="2025")
-
         self.assertEqual([document.id for document in filtered], [2, 3])
 
     def test_filter_by_search_term(self):
         filtered = filter_documents(self.documents, search_term="2. ac")
-
         self.assertEqual([document.id for document in filtered], [2])
 
 
@@ -104,7 +93,6 @@ class FilePathTests(SimpleTestCase):
     def test_safe_archive_path_stays_inside_archive_root(self):
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-
             with override_settings(ARCHIVE_ROOT=str(root)):
                 result = get_safe_archive_path("data/archive/test.pdf")
 
@@ -125,7 +113,6 @@ class ViewTests(SimpleTestCase):
     @patch("archive.views.get_cached_single_document_by_doc_type")
     def test_statute_view_renders_document_panel(self, get_document):
         get_document.return_value = make_document()
-
         response = self.client.get(reverse("statute-view", args=["satzung"]))
 
         self.assertEqual(response.status_code, 200)
@@ -133,9 +120,8 @@ class ViewTests(SimpleTestCase):
         self.assertContains(response, reverse("file-view", args=[7]))
 
     @patch("archive.views.get_filtered_documents")
-    def test_protocol_view_renders_documents(self, get_documents):
+    def test_protocol_view_renders_documents_data(self, get_documents):
         get_documents.return_value = [make_list_document()]
-
         response = self.client.get(reverse("protocol-view", args=["ac"]))
 
         self.assertEqual(response.status_code, 200)
@@ -147,7 +133,6 @@ class ViewTests(SimpleTestCase):
     def test_file_view_streams_pdf(self, get_document, open_file):
         get_document.return_value = make_document()
         open_file.return_value = BytesIO(b"%PDF-1.4")
-
         response = self.client.get(reverse("file-view", args=[7]))
 
         self.assertEqual(response.status_code, 200)
@@ -158,7 +143,6 @@ class ViewTests(SimpleTestCase):
     @patch("archive.views.get_document_by_id")
     def test_file_view_returns_404_for_missing_file(self, get_document):
         get_document.return_value = None
-
         response = self.client.get(reverse("file-view", args=[7]))
 
         self.assertEqual(response.status_code, 404)
