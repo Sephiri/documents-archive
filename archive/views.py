@@ -1,11 +1,8 @@
 from pathlib import Path
 
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from .models import Document
@@ -44,33 +41,18 @@ def _is_strong_password(value):
 
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('/intern/')
-
     context = {}
-
-    next_url = request.POST.get('next') or request.GET.get('next', '/intern/')
-    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
-        next_url = '/intern/'
-    context['next'] = next_url
 
     if request.method == 'POST':
         form_mode = request.POST.get('form_mode', 'login')
 
         if form_mode == 'login':
-            email = request.POST.get('email', '').strip()
             password = request.POST.get('password', '')
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                login(request, user)
-                safe_next = next_url if url_has_allowed_host_and_scheme(
-                    next_url, allowed_hosts={request.get_host()}
-                ) else '/intern/'
-                return redirect(safe_next)
-            context['error'] = 'Ungültige E-Mail-Adresse oder Passwort.'
+            if password:
+                return redirect('/intern/')
+            context['error'] = 'Bitte gib ein Passwort ein.'
 
         elif form_mode == 'register':
-            User = get_user_model()
             email = request.POST.get('email', '').strip()
             password = request.POST.get('password', '')
             password_confirm = request.POST.get('password_confirm', '')
@@ -84,33 +66,21 @@ def login_view(request):
                 )
             elif password != password_confirm:
                 context['register_error'] = 'Passwörter stimmen nicht überein.'
-            elif User.objects.filter(username=email).exists():
-                context['register_error'] = 'Diese E-Mail-Adresse ist bereits registriert.'
             else:
-                User.objects.create_user(
-                    username=email, email=email, password=password, is_active=False
-                )
-                context['register_success'] = (
-                    'Registrierung erfolgreich! Warte auf Freischaltung durch einen Administrator.'
-                )
+                return redirect('/intern/')
 
-    context['initial_mode'] = (
-        'register' if ('register_error' in context or 'register_success' in context) else 'login'
-    )
+    context['initial_mode'] = 'register' if 'register_error' in context else 'login'
     return render(request, 'login.html', context)
 
 
 def logout_view(request):
-    logout(request)
     return redirect('/')
 
 
-@login_required
 def intern_index(request):
     return redirect('/intern/protokolle/av/')
 
 
-@login_required
 def protokolle_view(request, convent_type):
     if convent_type not in PROTOCOL_TYPES:
         raise Http404
@@ -149,7 +119,6 @@ def protokolle_view(request, convent_type):
     })
 
 
-@login_required
 def statuten_view(request, slug):
     if slug not in STATUTE_TYPES:
         raise Http404
@@ -179,9 +148,6 @@ def statuten_view(request, slug):
 
 @xframe_options_exempt
 def file_serve_view(request, document_id):
-    if not request.user.is_authenticated:
-        return HttpResponse('Nicht autorisiert', status=401)
-
     document = get_object_or_404(Document, id=document_id)
 
     if not document.archive_path:

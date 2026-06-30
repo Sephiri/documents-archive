@@ -37,7 +37,6 @@
             <form method="post" class="flex flex-col gap-4">
                 {% csrf_token %}
                 <input type="hidden" name="form_mode" value="login">
-                <input type="hidden" name="next" value="{{ next }}">
 
                 {% if error %}
                 <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ error }}</div>
@@ -78,9 +77,6 @@
 
                 {% if register_error %}
                 <div class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{{ register_error }}</div>
-                {% endif %}
-                {% if register_success %}
-                <div class="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">{{ register_success }}</div>
                 {% endif %}
 
                 <div class="flex flex-col gap-1.5">
