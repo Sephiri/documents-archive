@@ -8,8 +8,8 @@ Internal document archive for Protokolle and Statuten. Members can browse Sitzun
 
 | Technology | Description |
 |---|---|
-| [Django 5](https://www.djangoproject.com) | Python web framework |
-| [PostgreSQL](https://www.postgresql.org) | Database (`psycopg2-binary`) |
+| [Django 6](https://www.djangoproject.com) | Python web framework |
+| [PostgreSQL](https://www.postgresql.org) | Database (`psycopg`) |
 | [Tailwind CSS](https://tailwindcss.com) | Utility-first CSS (via CDN) |
 | [Alpine.js](https://alpinejs.dev) | Lightweight JS for interactivity |
 | `python-dotenv` | `.env` file support |
@@ -38,7 +38,8 @@ Internal document archive for Protokolle and Statuten. Members can browse Sitzun
 ├── config/                  # Django project settings
 │   ├── settings.py
 │   ├── urls.py
-│   └── wsgi.py
+│   ├── wsgi.py
+│   └── asgi.py
 ├── archive/                 # Main Django app
 │   ├── models.py            # Document model (maps to existing `documents` table)
 │   ├── views.py             # Login, Protokolle, Statuten, file-serve views
@@ -108,4 +109,4 @@ The app runs at [http://localhost:8000](http://localhost:8000).
 
 ## Database Notes
 
-The `Document` model uses `managed = False` — Django reads the existing `documents` table without creating or migrating it. Only Django’s own auth/session tables are managed via migrations.
+The `Document` model uses `managed = False` — Django reads the existing `documents` table without creating or migrating it. Only Django's own auth/session tables are managed via migrations.
