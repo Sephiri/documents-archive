@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 from django.conf import settings
@@ -26,6 +25,22 @@ STATUTE_TYPES = {
     'beschlussbuch': 'Beschlussbuch',
     'fuxenfibel': 'Fuxenfibel',
 }
+
+
+def _is_valid_email(value):
+    local, sep, domain = value.partition('@')
+    if not sep or not local:
+        return False
+    domain_name, dot, tld = domain.rpartition('.')
+    return bool(dot) and bool(domain_name) and bool(tld)
+
+
+def _is_strong_password(value):
+    return (
+        len(value) >= 8
+        and any(char.isupper() for char in value)
+        and any(not char.isalnum() for char in value)
+    )
 
 
 def login_view(request):
@@ -60,9 +75,9 @@ def login_view(request):
             password = request.POST.get('password', '')
             password_confirm = request.POST.get('password_confirm', '')
 
-            if not re.match(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
+            if not _is_valid_email(email):
                 context['register_error'] = 'Ungültige E-Mail-Adresse.'
-            elif not re.match(r'^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$', password):
+            elif not _is_strong_password(password):
                 context['register_error'] = (
                     'Passwort muss mindestens 8 Zeichen, einen Großbuchstaben '
                     'und ein Sonderzeichen enthalten.'
