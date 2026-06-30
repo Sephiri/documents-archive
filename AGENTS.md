@@ -24,7 +24,11 @@ Examples:
 
 ## Pull requests
 
-Create a pull request for every completed task unless explicitly told not to.
+Only create a pull request when the user explicitly asks for a PR or when a feature/fix/docs/refactor task is complete and ready to merge into main.
+
+Never create a pull request for branch maintenance tasks such as rebasing, syncing with main, resolving rebase conflicts, updating dependencies only to unblock another branch, or pushing intermediate commits.
+
+When asked to update a branch with main, only rebase the current branch onto origin/main and push the same branch with --force-with-lease. Then stop.
 
 PR descriptions should include:
 - Summary
