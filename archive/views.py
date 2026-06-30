@@ -48,7 +48,10 @@ def login_view(request):
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
-                return redirect(next_url)
+                safe_next = next_url if url_has_allowed_host_and_scheme(
+                    next_url, allowed_hosts={request.get_host()}
+                ) else '/intern/'
+                return redirect(safe_next)
             context['error'] = 'Ungültige E-Mail-Adresse oder Passwort.'
 
         elif form_mode == 'register':
@@ -57,7 +60,7 @@ def login_view(request):
             password = request.POST.get('password', '')
             password_confirm = request.POST.get('password_confirm', '')
 
-            if not re.match(r'\S+@\S+\.\S+', email):
+            if not re.match(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
                 context['register_error'] = 'Ungültige E-Mail-Adresse.'
             elif not re.match(r'^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$', password):
                 context['register_error'] = (
