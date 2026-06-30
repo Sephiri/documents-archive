@@ -53,6 +53,7 @@ class DocumentData:
 class ListDocument(DocumentData):
     semester: str
     title: str
+    uploaded_at_formatted: str
 
 
 def is_protocol_type(value: str) -> bool:

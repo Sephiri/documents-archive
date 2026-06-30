@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from django.core.cache import cache
 from django.db.models import F
 
-from archive.labels import DocumentData, ListDocument, calc_semester, get_document_list_title, to_date_only
+from archive.labels import DocumentData, ListDocument, calc_semester, format_date, get_document_list_title, to_date_only
 from archive.models import Document
 
 
@@ -36,6 +36,7 @@ def document_to_list_data(document: Document) -> ListDocument:
         **asdict(data),
         semester=calc_semester(data.version_date),
         title=get_document_list_title(data),
+        uploaded_at_formatted=format_date(data.uploaded_at),
     )
 
 

@@ -43,7 +43,12 @@ def make_list_document(
         archive_path=f"data/archive/{document_id}.pdf",
         file_size_bytes=2048,
     )
-    return ListDocument(**document.__dict__, semester=semester, title=get_document_list_title(document))
+    return ListDocument(
+        **document.__dict__,
+        semester=semester,
+        title=get_document_list_title(document),
+        uploaded_at_formatted="06.06.2026",
+    )
 
 
 class LabelTests(SimpleTestCase):
