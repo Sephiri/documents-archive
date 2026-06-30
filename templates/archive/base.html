@@ -46,7 +46,9 @@
 
       <div class="sidebar-inset">
         <header class="topbar">
-          <button class="sidebar-trigger" type="button" aria-label="Sidebar umschalten">☰</button>
+          <button class="sidebar-trigger" type="button" aria-label="Sidebar umschalten" aria-expanded="true" data-sidebar-toggle>
+            <span class="sidebar-trigger-icon" aria-hidden="true"></span>
+          </button>
           <div class="separator-vertical"></div>
           <nav class="breadcrumb" aria-label="Breadcrumb">
             <span class="breadcrumb-main">{{ breadcrumb_main }}</span>
@@ -60,5 +62,20 @@
         </main>
       </div>
     </div>
+
+    <script>
+      (() => {
+        const button = document.querySelector("[data-sidebar-toggle]")
+
+        if (!button) {
+          return
+        }
+
+        button.addEventListener("click", () => {
+          const collapsed = document.body.classList.toggle("sidebar-collapsed")
+          button.setAttribute("aria-expanded", String(!collapsed))
+        })
+      })()
+    </script>
   </body>
 </html>
