@@ -27,12 +27,6 @@ class Member(models.Model):
         default=Status.FUCHS,
     )
 
-    role = models.CharField(
-        max_length=20,
-        choices=Role.choices,
-        default=Role.NORMAL,
-    )
-
     is_current_member = models.BooleanField(default=True)
 
     def __str__(self):
