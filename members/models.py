@@ -12,11 +12,15 @@ class Member(models.Model):
         AKTIV = "AKTIV", "Aktiv"
         INAKTIV = "INAKTIV", "Inaktiv"
 
+    class Semester(models.TextChoices):
+        SS = "SS", "SS"
+        WS = "WS", "WS"
+
     user = models.OneToOneField( # 1-1 Relation zu CustomUser, damit jedes Mitglied genau einen Benutzer hat
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
-        null=True, # im admin panel darf das Feld leer sein
-        blank=True, # in der db darf null gespeichert sein
+        null=True, # in der db darf null gespeichert sein
+        blank=True, # im admin panel darf das Feld leer sein 
         related_name="member",
     )
 
@@ -27,6 +31,12 @@ class Member(models.Model):
     last_name = models.CharField(max_length=150)
 
     joined_at = models.DateField()
+    joined_semester = models.CharField(
+        max_length=2,
+        choices=Semester.choices,
+    )
+
+    joined_semester_year = models.PositiveSmallIntegerField()
     date_of_birth = models.DateField(blank=True, null=True)
 
     phone = models.CharField(max_length=50, blank=True)
@@ -49,7 +59,7 @@ class Member(models.Model):
         max_length=20,
         choices=ActivityStatus.choices,
         blank=True,
-        null=True,
+        default="",
     )
 
     wine_mother = models.ForeignKey(
@@ -64,6 +74,15 @@ class Member(models.Model):
 
     class Meta:
         db_table = "members"
+
+    def joined_semester_display_short(self):
+        year_short = str(self.joined_semester_year)[-2:]
+
+        if self.joined_semester == self.Semester.WS:
+            next_year_short = str(self.joined_semester_year + 1)[-2:]
+            return f"WS{year_short}/{next_year_short}"
+
+        return f"SS{year_short}"
 
     def __str__(self):
         parts = [self.first_name, self.middle_names, self.last_name]
