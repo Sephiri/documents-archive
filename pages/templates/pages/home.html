@@ -1,27 +1,16 @@
-<!doctype html>
-<html lang="de">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Intern</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+{% block title %}Startseite{% endblock %}
 
-<body class="bg-light">
-    <main class="container py-5">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h1 class="h3">Interner Bereich</h1>
-                <p class="text-muted">Mein erstes Django-Template mit Bootstrap.</p>
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="h3">Interner Bereich</h1>
+        <p class="text-muted">Bootstrap ist aktiv.</p>
 
-                <button class="btn btn-primary">
-                    Test Button
-                </button>
-            </div>
-        </div>
-    </main>
-</body>
-
-</html>
+        <button class="btn btn-primary">
+            Test Button asdf
+        </button>
+    </div>
+</div>
+{% endblock %}
