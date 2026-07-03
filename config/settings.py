@@ -156,3 +156,7 @@ STATIC_URL = 'static/'
 # 
 
 AUTH_USER_MODEL = "accounts.CustomUser"
+ACCOUNT_FORMS = {
+    "signup": "accounts.forms.MemberSignupForm",
+}
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
