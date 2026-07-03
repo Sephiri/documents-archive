@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import Member
 
 
@@ -16,7 +17,7 @@ class MemberProfileForm(forms.ModelForm):
             "bio",
             "wine_mother",
         ]
-            
+
         widgets = {
             "middle_names": forms.TextInput(attrs={"class": "form-control"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),

@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
@@ -82,6 +82,7 @@ def document_list(request):
         },
     )
 
+
 @login_required
 @xframe_options_sameorigin
 def document_file(request, document_id):
@@ -111,6 +112,7 @@ def document_file(request, document_id):
     response["X-Frame-Options"] = "SAMEORIGIN"
     return response
 
+
 @login_required
 def document_detail(request, document_id):
     member = request.user.member
@@ -124,6 +126,7 @@ def document_detail(request, document_id):
         "documents/document_detail.html",
         {"document": document},
     )
+
 
 @login_required
 def document_download(request, document_id):
@@ -141,6 +144,7 @@ def document_download(request, document_id):
     )
     response["Content-Disposition"] = f'attachment; filename="{file_path.name}"'
     return response
+
 
 def get_document_file_path(document):
     if not document.archive_path:

@@ -16,11 +16,11 @@ class Member(models.Model):
         SS = "SS", "SS"
         WS = "WS", "WS"
 
-    user = models.OneToOneField( # 1-1 Relation zu CustomUser, damit jedes Mitglied genau einen Benutzer hat
+    user = models.OneToOneField(  # 1-1 Relation zu CustomUser, damit jedes Mitglied genau einen Benutzer hat
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
-        null=True, # in der db darf null gespeichert sein
-        blank=True, # im admin panel darf das Feld leer sein 
+        null=True,  # in der db darf null gespeichert sein
+        blank=True,  # im admin panel darf das Feld leer sein
         related_name="member",
     )
 
@@ -47,7 +47,7 @@ class Member(models.Model):
     study_program = models.CharField(max_length=150, blank=True)
     profession = models.CharField(max_length=150, blank=True)
 
-    bio = models.TextField(blank=True) # bei text feldern leerer string "" statt null
+    bio = models.TextField(blank=True)  # bei text feldern leerer string "" statt null
 
     status = models.CharField(
         max_length=20,
@@ -70,7 +70,9 @@ class Member(models.Model):
         related_name="wine_daughters",
     )
 
-    is_current_member = models.BooleanField(default=True) # darf er noch in den Bereich oder ist der member ausgetreten?
+    is_current_member = models.BooleanField(
+        default=True
+    )  # darf er noch in den Bereich oder ist der member ausgetreten?
 
     class Meta:
         db_table = "members"

@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Member, Office, OfficeAssignment
 
 
@@ -8,7 +9,7 @@ class MemberAdmin(admin.ModelAdmin):
         "first_name",
         "last_name",
         "email",
-        "phone", 
+        "phone",
         "address_line",
         "postal_code",
         "city",
@@ -16,7 +17,7 @@ class MemberAdmin(admin.ModelAdmin):
         "status",
         "activity_status",
         "joined_at",
-        "joined_semester", 
+        "joined_semester",
         "joined_semester_year",
         "is_current_member",
         "user",

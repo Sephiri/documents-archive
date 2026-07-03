@@ -1,8 +1,28 @@
 {
-    "chat.tools.terminal.autoApprove": {
-        "/^cd /home/angel/projects/documents-archive && python manage\\.py check$/": {
-            "approve": true,
-            "matchCommandLine": true
-        }
+  "chat.tools.terminal.autoApprove": {
+    "/^cd /home/angel/projects/documents-archive && python manage\\.py check$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /home/angel/projects/documents-archive && ruff check \\.$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /home/angel/projects/documents-archive && ruff format --check \\.$/": {
+      "approve": true,
+      "matchCommandLine": true
     }
+  }, 
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  "[html]": {
+    "editor.defaultFormatter": "monosans.djlint",
+    "editor.formatOnSave": true
+  }
 }

@@ -27,8 +27,7 @@ def member_list(request):
     ).select_related("office")
 
     members = (
-        Member.objects
-        .filter(is_current_member=True)
+        Member.objects.filter(is_current_member=True)
         .prefetch_related(
             Prefetch(
                 "office_assignments",
@@ -62,6 +61,7 @@ def member_list(request):
             "status_choices": Member.Status.choices,
         },
     )
+
 
 @login_required
 def member_profile(request):
