@@ -3,6 +3,10 @@
 Internal document archive for Protokolle and Statuten. Members can browse Sitzungsprotokolle (AV, AC, DaC, CC) and Vereinsdokumente (Satzung, Vereinsordnung, Beschlussbuch, Fuxenfibel) and view them as PDFs directly in the browser.
 
 ## Tech Stack
+# Linting
+`ruff format .`
+`ruff check . --fix`
+`djlint templates documents/templates members/templates pages/templates --reformat`
 
 ## UI Layout
 
@@ -99,3 +103,6 @@ pip install -r requirements.txt
 
 # Django-Server starten
 python manage.py runserver
+
+# Dev url
+127.0.0.1:8000

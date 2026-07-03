@@ -23,5 +23,5 @@ class Document(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'documents'
-        unique_together = (('doc_type', 'convent_type', 'version_date'),)
+        db_table = "documents"
+        unique_together = (("doc_type", "convent_type", "version_date"),)

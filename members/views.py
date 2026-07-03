@@ -1,12 +1,12 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, Prefetch
+from django.db.models import Prefetch, Q
 from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
-from .models import Member, OfficeAssignment
 from .forms import MemberProfileForm
+from .models import Member, OfficeAssignment
 
 
 @login_required
@@ -22,13 +22,10 @@ def member_list(request):
     q = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
 
-    current_office_assignments = OfficeAssignment.objects.filter(
-        end_date__isnull=True
-    ).select_related("office")
+    current_office_assignments = OfficeAssignment.objects.filter(end_date__isnull=True).select_related("office")
 
     members = (
-        Member.objects
-        .filter(is_current_member=True)
+        Member.objects.filter(is_current_member=True)
         .prefetch_related(
             Prefetch(
                 "office_assignments",
@@ -62,6 +59,7 @@ def member_list(request):
             "status_choices": Member.Status.choices,
         },
     )
+
 
 @login_required
 def member_profile(request):

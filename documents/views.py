@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
@@ -23,11 +23,7 @@ def document_list(request):
     documents = Document.objects.all()
 
     if q:
-        documents = documents.filter(
-            Q(doc_type__icontains=q)
-            | Q(convent_type__icontains=q)
-            | Q(archive_path__icontains=q)
-        )
+        documents = documents.filter(Q(doc_type__icontains=q) | Q(convent_type__icontains=q) | Q(archive_path__icontains=q))
 
     if doc_type:
         documents = documents.filter(doc_type=doc_type)
@@ -53,11 +49,7 @@ def document_list(request):
         document.can_view = can_view_document(member, document)
 
     doc_types = (
-        Document.objects.exclude(doc_type__isnull=True)
-        .exclude(doc_type="")
-        .values_list("doc_type", flat=True)
-        .distinct()
-        .order_by("doc_type")
+        Document.objects.exclude(doc_type__isnull=True).exclude(doc_type="").values_list("doc_type", flat=True).distinct().order_by("doc_type")
     )
 
     convent_types = (
@@ -81,6 +73,7 @@ def document_list(request):
             "selected_sort": sort,
         },
     )
+
 
 @login_required
 @xframe_options_sameorigin
@@ -111,6 +104,7 @@ def document_file(request, document_id):
     response["X-Frame-Options"] = "SAMEORIGIN"
     return response
 
+
 @login_required
 def document_detail(request, document_id):
     member = request.user.member
@@ -124,6 +118,7 @@ def document_detail(request, document_id):
         "documents/document_detail.html",
         {"document": document},
     )
+
 
 @login_required
 def document_download(request, document_id):
@@ -141,6 +136,7 @@ def document_download(request, document_id):
     )
     response["Content-Disposition"] = f'attachment; filename="{file_path.name}"'
     return response
+
 
 def get_document_file_path(document):
     if not document.archive_path:

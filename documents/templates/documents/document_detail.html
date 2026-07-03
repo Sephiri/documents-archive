@@ -1,55 +1,46 @@
-<!DOCTYPE html>
-<html lang="de">
-    <head>
-        <meta charset="utf-8">
-        <title>Dokument</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-              rel="stylesheet">
-    </head>
-    <body class="bg-light">
-        <main class="container py-5">
-            <a href="{% url 'documents:document_list' %}"
-               class="btn btn-outline-secondary btn-sm mb-3">Zurück</a>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h1 class="h4 mb-3">
-                        {{ document.doc_type }}
-                        {% if document.convent_type %}
-                            – {{ document.convent_type }}
-                        {% endif %}
-                    </h1>
-                    <dl class="row mb-0">
-                        <dt class="col-sm-3">Datum</dt>
-                        <dd class="col-sm-9">
-                            {{ document.version_date }}
-                        </dd>
-                        {% if document.convent_number %}
-                            <dt class="col-sm-3">Convent-Nr.</dt>
-                            <dd class="col-sm-9">
-                                {{ document.convent_number }}
-                            </dd>
-                        {% endif %}
-                        <dt class="col-sm-3">Dateigröße</dt>
-                        <dd class="col-sm-9">
-                            {{ document.file_size_bytes }} Bytes
-                        </dd>
-                        <dt class="col-sm-3">Hochgeladen</dt>
-                        <dd class="col-sm-9">
-                            {{ document.uploaded_at }}
-                        </dd>
-                    </dl>
-                </div>
-            </div>
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <a href="{% url 'documents:document_download' document.pk %}"
-                       class="btn btn-primary mb-3">Herunterladen</a>
-                    <iframe src="{% url 'documents:document_file' document.pk %}"
-                            style="width: 100%;
-                                   height: 80vh;
-                                   border: 0"></iframe>
-                </div>
-            </div>
-        </main>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Mein Profil{% endblock %}
+{% block content %}
+  <a href="{% url 'documents:document_list' %}"
+     class="btn btn-outline-secondary btn-sm mb-3">Zurück</a>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h1 class="h4 mb-3">
+        {{ document.doc_type }}
+        {% if document.convent_type %}
+          – {{ document.convent_type }}
+        {% endif %}
+      </h1>
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Datum</dt>
+        <dd class="col-sm-9">
+          {{ document.version_date }}
+        </dd>
+        {% if document.convent_number %}
+          <dt class="col-sm-3">Convent-Nr.</dt>
+          <dd class="col-sm-9">
+            {{ document.convent_number }}
+          </dd>
+        {% endif %}
+        <dt class="col-sm-3">Dateigröße</dt>
+        <dd class="col-sm-9">
+          {{ document.file_size_bytes }} Bytes
+        </dd>
+        <dt class="col-sm-3">Hochgeladen</dt>
+        <dd class="col-sm-9">
+          {{ document.uploaded_at }}
+        </dd>
+      </dl>
+    </div>
+  </div>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <a href="{% url 'documents:document_download' document.pk %}"
+         class="btn btn-primary mb-3">Herunterladen</a>
+      <iframe src="{% url 'documents:document_file' document.pk %}"
+              style="width: 100%;
+                     height: 80vh;
+                     border: 0"></iframe>
+    </div>
+  </div>
+{% endblock %}
