@@ -1,0 +1,27 @@
+{% for document in documents %}
+<div class="list-group-item {% if not document.can_view %}text-muted bg-light{% endif %}">
+    <div class="fw-semibold">
+        {{ document.doc_type }}
+        {% if document.convent_type %}
+        – {{ document.convent_type }}
+        {% endif %}
+    </div>
+
+    <div class="small">
+        {{ document.version_date }}
+        {% if document.convent_number %}
+        · Nr. {{ document.convent_number }}
+        {% endif %}
+    </div>
+
+    {% if document.can_view %}
+    <a href="{% url 'documents:document_detail' document.pk %}" class="btn btn-sm btn-primary mt-2">
+        Anzeigen
+    </a>
+    {% else %}
+    <button class="btn btn-sm btn-secondary mt-2" disabled>
+        Kein Zugriff
+    </button>
+    {% endif %}
+</div>
+{% endfor %}
