@@ -1,12 +1,12 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q, Prefetch
+from django.db.models import Prefetch, Q
 from django.http import HttpResponseForbidden
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 
-from .models import Member, OfficeAssignment
 from .forms import MemberProfileForm
+from .models import Member, OfficeAssignment
 
 
 @login_required
