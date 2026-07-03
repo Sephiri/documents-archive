@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Prefetch
 from django.http import HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from .models import Member, OfficeAssignment
+from .forms import MemberProfileForm
 
 
 @login_required
@@ -59,4 +61,30 @@ def member_list(request):
             "selected_status": status,
             "status_choices": Member.Status.choices,
         },
+    )
+
+@login_required
+def member_profile(request):
+    try:
+        member = request.user.member
+    except ObjectDoesNotExist:
+        return HttpResponseForbidden("Kein Mitgliederprofil verknüpft.")
+
+    if not member.is_current_member:
+        return HttpResponseForbidden("Kein Zugriff.")
+
+    if request.method == "POST":
+        form = MemberProfileForm(request.POST, instance=member)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil wurde gespeichert.")
+            return redirect("members:member_profile")
+    else:
+        form = MemberProfileForm(instance=member)
+
+    return render(
+        request,
+        "members/member_profile.html",
+        {"form": form, "member": member},
     )
