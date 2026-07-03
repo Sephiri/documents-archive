@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /home/angel/projects/documents-archive && python manage\\.py check$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
