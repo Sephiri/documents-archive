@@ -5,6 +5,7 @@ Internal document archive for Protokolle and Statuten. Members can browse Sitzun
 ## Tech Stack
 # Linting
 `ruff format .`
+`ruff check . --fix`
 `djlint templates documents/templates members/templates pages/templates --reformat`
 
 ## UI Layout

@@ -23,11 +23,7 @@ def document_list(request):
     documents = Document.objects.all()
 
     if q:
-        documents = documents.filter(
-            Q(doc_type__icontains=q)
-            | Q(convent_type__icontains=q)
-            | Q(archive_path__icontains=q)
-        )
+        documents = documents.filter(Q(doc_type__icontains=q) | Q(convent_type__icontains=q) | Q(archive_path__icontains=q))
 
     if doc_type:
         documents = documents.filter(doc_type=doc_type)
@@ -53,11 +49,7 @@ def document_list(request):
         document.can_view = can_view_document(member, document)
 
     doc_types = (
-        Document.objects.exclude(doc_type__isnull=True)
-        .exclude(doc_type="")
-        .values_list("doc_type", flat=True)
-        .distinct()
-        .order_by("doc_type")
+        Document.objects.exclude(doc_type__isnull=True).exclude(doc_type="").values_list("doc_type", flat=True).distinct().order_by("doc_type")
     )
 
     convent_types = (

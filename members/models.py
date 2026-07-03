@@ -16,7 +16,7 @@ class Member(models.Model):
         SS = "SS", "SS"
         WS = "WS", "WS"
 
-    user = models.OneToOneField(  # 1-1 Relation zu CustomUser, damit jedes Mitglied genau einen Benutzer hat
+    user = models.OneToOneField(  # 1-1 Relation zu CustomUser, ein Mitglied ein Benutzer
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,  # in der db darf null gespeichert sein
@@ -70,9 +70,7 @@ class Member(models.Model):
         related_name="wine_daughters",
     )
 
-    is_current_member = models.BooleanField(
-        default=True
-    )  # darf er noch in den Bereich oder ist der member ausgetreten?
+    is_current_member = models.BooleanField(default=True)  # darf er noch in den Bereich oder ist der member ausgetreten?
 
     class Meta:
         db_table = "members"

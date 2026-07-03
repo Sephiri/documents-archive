@@ -22,9 +22,7 @@ def member_list(request):
     q = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
 
-    current_office_assignments = OfficeAssignment.objects.filter(
-        end_date__isnull=True
-    ).select_related("office")
+    current_office_assignments = OfficeAssignment.objects.filter(end_date__isnull=True).select_related("office")
 
     members = (
         Member.objects.filter(is_current_member=True)
