@@ -10,6 +10,7 @@ def get_member_directory(*, q="", status=""):
 
     members = (
         Member.objects.filter(is_current_member=True)
+        .select_related("wine_mother")
         .prefetch_related(
             Prefetch(
                 "office_assignments",
