@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
@@ -58,9 +60,6 @@ jobs:
         run: djlint templates documents/templates members/templates pages/templates --check
 
       - name: Django check
-        run: python manage.py check
-
-      - name: Check Django project
         run: python manage.py check
 
       - name: Run tests

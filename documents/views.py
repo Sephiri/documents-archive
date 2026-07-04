@@ -2,13 +2,13 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.http import FileResponse, Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 from .models import Document
 from .permissions import can_view_document
+from .services import get_document_filter_options, get_filtered_documents
 
 
 @login_required
@@ -18,59 +18,28 @@ def document_list(request):
     q = request.GET.get("q", "").strip()
     doc_type = request.GET.get("doc_type", "").strip()
     convent_type = request.GET.get("convent_type", "").strip()
-    sort = request.GET.get("sort", "-version_date")
+    sort = request.GET.get("sort", "-version_date").strip()
 
-    documents = Document.objects.all()
-
-    if q:
-        documents = documents.filter(Q(doc_type__icontains=q) | Q(convent_type__icontains=q) | Q(archive_path__icontains=q))
-
-    if doc_type:
-        documents = documents.filter(doc_type=doc_type)
-
-    if convent_type:
-        documents = documents.filter(convent_type=convent_type)
-
-    allowed_sorts = {
-        "-version_date",
-        "version_date",
-        "-uploaded_at",
-        "uploaded_at",
-        "doc_type",
-        "convent_type",
-    }
-
-    if sort not in allowed_sorts:
-        sort = "-version_date"
-
-    documents = documents.order_by(sort)
-
-    for document in documents:
-        document.can_view = can_view_document(member, document)
-
-    doc_types = (
-        Document.objects.exclude(doc_type__isnull=True).exclude(doc_type="").values_list("doc_type", flat=True).distinct().order_by("doc_type")
+    documents = get_filtered_documents(
+        member=member,
+        q=q,
+        doc_type=doc_type,
+        convent_type=convent_type,
+        sort=sort,
     )
 
-    convent_types = (
-        Document.objects.exclude(convent_type__isnull=True)
-        .exclude(convent_type="")
-        .values_list("convent_type", flat=True)
-        .distinct()
-        .order_by("convent_type")
-    )
+    filter_options = get_document_filter_options()
 
     return render(
         request,
         "documents/document_list.html",
         {
             "documents": documents,
-            "doc_types": doc_types,
-            "convent_types": convent_types,
             "q": q,
             "selected_doc_type": doc_type,
             "selected_convent_type": convent_type,
             "selected_sort": sort,
+            **filter_options,
         },
     )
 
